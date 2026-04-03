@@ -1,0 +1,8 @@
+services:
+  gateway:
+    build: .
+    container_name: local-tunnel-gateway
+    ports:
+      - "18080:18080"
+    volumes:
+      - ./gateway.config.json:/app/gateway.config.json:rw
