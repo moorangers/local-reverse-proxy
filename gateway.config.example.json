@@ -1,0 +1,12 @@
+{
+  "listenPort": 18080,
+  "healthCheckIntervalMs": 60000,
+  "routes": [
+    {
+      "domain": "<name>.localtest.me",
+      "target": "http://127.0.0.1:<port>",
+      "healthCheckEnabled": true,
+      "websocket": true
+    }
+  ]
+}

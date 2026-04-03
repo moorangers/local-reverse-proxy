@@ -1,0 +1,28 @@
+{
+  "name": "local-reverse-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "setup:config": "cp -n gateway.config.example.json gateway.config.json || true",
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config jest.config.json",
+    "test:watch": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config jest.config.json --watch",
+    "test:cov": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config jest.config.json --coverage"
+  },
+  "dependencies": {
+    "http-proxy": "^1.18.1"
+  },
+  "devDependencies": {
+    "@types/http-proxy": "^1.17.16",
+    "@types/jest": "29.5.14",
+    "@types/node": "^22.10.2",
+    "jest": "29.7.0",
+    "ts-jest": "29.4.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
