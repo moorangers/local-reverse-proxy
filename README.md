@@ -38,7 +38,7 @@ yarn start
 ### Build Image
 
 ```bash
-docker build -t local-tunnel-gateway:latest .
+docker build -t local-reverse-proxy:latest .
 ```
 
 ### Run Container
@@ -47,7 +47,7 @@ docker build -t local-tunnel-gateway:latest .
 docker run --rm \
   -p 18080:18080 \
   -v "$(pwd)/gateway.config.json:/app/gateway.config.json:rw" \
-  local-tunnel-gateway:latest
+  local-reverse-proxy:latest
 ```
 
 ## Docker Compose
@@ -109,7 +109,7 @@ yarn install
 yarn setup:config
 yarn build
 npm i -g pm2
-pm2 start dist/index.js --name local-tunnel-gateway
+pm2 start dist/index.js --name local-reverse-proxy
 pm2 startup
 # Run the command that PM2 prints (usually requires admin/sudo), then save
 pm2 save
@@ -119,7 +119,7 @@ pm2 save
 
 ```bash
 pm2 status
-pm2 logs local-tunnel-gateway
+pm2 logs local-reverse-proxy
 ```
 
 - If `status` is `online`, the service is running
@@ -131,8 +131,8 @@ pm2 logs local-tunnel-gateway
 2. Restart to reload config
 
 ```bash
-pm2 restart local-tunnel-gateway
-pm2 logs local-tunnel-gateway
+pm2 restart local-reverse-proxy
+pm2 logs local-reverse-proxy
 ```
 
 Note: The service reads config at startup, so you must restart every time config changes.
@@ -142,8 +142,8 @@ Note: The service reads config at startup, so you must restart every time config
 ```bash
 yarn install
 yarn build
-pm2 restart local-tunnel-gateway
-pm2 logs local-tunnel-gateway
+pm2 restart local-reverse-proxy
+pm2 logs local-reverse-proxy
 ```
 
 ### Health Check After Deploy/Restart
@@ -159,10 +159,10 @@ curl -i http://127.0.0.1:18080/__routes
 
 ```bash
 pm2 status
-pm2 logs local-tunnel-gateway
-pm2 restart local-tunnel-gateway
-pm2 stop local-tunnel-gateway
-pm2 delete local-tunnel-gateway
+pm2 logs local-reverse-proxy
+pm2 restart local-reverse-proxy
+pm2 stop local-reverse-proxy
+pm2 delete local-reverse-proxy
 pm2 save
 ```
 
@@ -198,4 +198,4 @@ kill -9 <PID>
 
 - Port conflict: check for another process using `18080` before start/restart
 - `(node) [DEP0060]` warning: this comes from `http-proxy` dependency on newer Node versions; app still runs
-- Config changed but not applied: usually forgot `pm2 restart local-tunnel-gateway`
+- Config changed but not applied: usually forgot `pm2 restart local-reverse-proxy`
