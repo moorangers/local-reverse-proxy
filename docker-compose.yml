@@ -1,7 +1,7 @@
 services:
   gateway:
     build: .
-    container_name: local-tunnel-gateway
+    container_name: local-reverse-proxy
     ports:
       - "18080:18080"
     volumes:

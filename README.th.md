@@ -38,7 +38,7 @@ yarn start
 ### Build Image
 
 ```bash
-docker build -t local-tunnel-gateway:latest .
+docker build -t local-reverse-proxy:latest .
 ```
 
 ### Run Container
@@ -47,7 +47,7 @@ docker build -t local-tunnel-gateway:latest .
 docker run --rm \
   -p 18080:18080 \
   -v "$(pwd)/gateway.config.json:/app/gateway.config.json:rw" \
-  local-tunnel-gateway:latest
+  local-reverse-proxy:latest
 ```
 
 ## Docker Compose
@@ -109,7 +109,7 @@ yarn install
 yarn setup:config
 yarn build
 npm i -g pm2
-pm2 start dist/index.js --name local-tunnel-gateway
+pm2 start dist/index.js --name local-reverse-proxy
 pm2 startup
 # รันคำสั่งที่ PM2 แสดงกลับมา (มักต้องใช้สิทธิ์ admin/sudo) แล้วค่อย save
 pm2 save
@@ -119,7 +119,7 @@ pm2 save
 
 ```bash
 pm2 status
-pm2 logs local-tunnel-gateway
+pm2 logs local-reverse-proxy
 ```
 
 - ถ้า `status` เป็น `online` แปลว่าใช้งานได้
@@ -131,8 +131,8 @@ pm2 logs local-tunnel-gateway
 2. restart เพื่อ reload config
 
 ```bash
-pm2 restart local-tunnel-gateway
-pm2 logs local-tunnel-gateway
+pm2 restart local-reverse-proxy
+pm2 logs local-reverse-proxy
 ```
 
 หมายเหตุ: service อ่าน config ตอน start จึงต้อง restart ทุกครั้งหลังแก้ config
@@ -142,8 +142,8 @@ pm2 logs local-tunnel-gateway
 ```bash
 yarn install
 yarn build
-pm2 restart local-tunnel-gateway
-pm2 logs local-tunnel-gateway
+pm2 restart local-reverse-proxy
+pm2 logs local-reverse-proxy
 ```
 
 ### Health Check หลัง deploy/restart
@@ -159,10 +159,10 @@ curl -i http://127.0.0.1:18080/__routes
 
 ```bash
 pm2 status
-pm2 logs local-tunnel-gateway
-pm2 restart local-tunnel-gateway
-pm2 stop local-tunnel-gateway
-pm2 delete local-tunnel-gateway
+pm2 logs local-reverse-proxy
+pm2 restart local-reverse-proxy
+pm2 stop local-reverse-proxy
+pm2 delete local-reverse-proxy
 pm2 save
 ```
 
@@ -198,4 +198,4 @@ kill -9 <PID>
 
 - พอร์ตชน: ตรวจ process อื่นที่ใช้ `18080` ก่อน start/restart
 - เจอ `(node) [DEP0060]` warning: เป็น warning จาก dependency `http-proxy` บน Node ใหม่ แอปยังรันได้
-- แก้ config แล้วไม่เปลี่ยน: มักลืม `pm2 restart local-tunnel-gateway`
+- แก้ config แล้วไม่เปลี่ยน: มักลืม `pm2 restart local-reverse-proxy`
