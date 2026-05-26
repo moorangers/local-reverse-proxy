@@ -62,6 +62,49 @@ Common commands:
 - Follow logs: `docker compose logs -f gateway`
 - Stop services: `docker compose down`
 
+## Quick Run Without VS Code
+
+The main helper script is `./scripts/proxy.sh`. It uses PM2 so the gateway can run as a background process.
+
+First time on a machine:
+
+```bash
+npm i -g pm2
+./scripts/proxy.sh setup
+./scripts/proxy.sh startup
+```
+
+If `pm2 startup` prints a `sudo env ...` command, run that command once, then run `pm2 save`.
+
+After restarting your computer:
+
+```bash
+./scripts/proxy.sh status
+./scripts/proxy.sh start
+```
+
+If startup is configured successfully, the service should usually come back automatically after login/reboot, so `status` is enough to check it.
+
+On macOS, you can also double-click `start-proxy.command` from Finder to start/reload without typing a command.
+
+Common helper commands:
+
+```bash
+./scripts/proxy.sh restart
+./scripts/proxy.sh logs
+./scripts/proxy.sh health
+./scripts/proxy.sh stop
+```
+
+If you prefer Yarn scripts:
+
+```bash
+yarn proxy:start
+yarn proxy:restart
+yarn proxy:status
+yarn proxy:logs
+```
+
 ## Config Example
 
 Update `gateway.config.json` to this format:

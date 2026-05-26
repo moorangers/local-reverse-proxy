@@ -62,6 +62,49 @@ docker compose up --build -d
 - ดู log แบบต่อเนื่อง: `docker compose logs -f gateway`
 - หยุด service: `docker compose down`
 
+## ทางลัดสำหรับรันโดยไม่ต้องเปิด VS Code
+
+สคริปต์หลักอยู่ที่ `./scripts/proxy.sh` และใช้ PM2 เพื่อให้ service อยู่เป็น background process
+
+ครั้งแรกในเครื่อง:
+
+```bash
+npm i -g pm2
+./scripts/proxy.sh setup
+./scripts/proxy.sh startup
+```
+
+ถ้า `pm2 startup` แสดงคำสั่ง `sudo env ...` ให้รันคำสั่งนั้นหนึ่งครั้ง แล้วรัน `pm2 save`
+
+หลัง restart เครื่อง:
+
+```bash
+./scripts/proxy.sh status
+./scripts/proxy.sh start
+```
+
+ถ้าตั้ง `startup` สำเร็จ โดยปกติ service จะกลับมาเองหลัง login/reboot แค่ใช้ `status` เช็กได้เลย
+
+บน macOS สามารถ double-click `start-proxy.command` จาก Finder ได้ด้วย ถ้าอยาก start/reload แบบไม่พิมพ์ command
+
+คำสั่งที่ใช้บ่อย:
+
+```bash
+./scripts/proxy.sh restart
+./scripts/proxy.sh logs
+./scripts/proxy.sh health
+./scripts/proxy.sh stop
+```
+
+ถ้าชอบใช้ผ่าน Yarn:
+
+```bash
+yarn proxy:start
+yarn proxy:restart
+yarn proxy:status
+yarn proxy:logs
+```
+
 ## Config Example
 
 แก้ไฟล์ `gateway.config.json` ให้เป็นรูปแบบนี้:
