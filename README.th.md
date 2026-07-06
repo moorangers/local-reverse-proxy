@@ -198,6 +198,15 @@ curl -i http://127.0.0.1:18080/__routes
 - ต้องได้ `HTTP 200`
 - response ควรเห็น routes ล่าสุดที่เพิ่งแก้
 
+### Admin UI
+
+ถ้าอยากดู status และ config แบบหน้าเว็บ:
+
+- เปิด `http://127.0.0.1:18080/__admin`
+- หน้าเว็บจะแสดง proxy online status, route status, active connections, recent logs และ config snapshot
+- หน้าเว็บนี้เป็นแบบ monitor/read-only สำหรับส่วน manage service ให้ใช้ command snippet ที่หน้าเว็บแสดง แล้วสั่งเองใน terminal
+- ถ้าจะแก้ config ให้แก้ไฟล์ `gateway.config.json` โดยตรง แล้วค่อย `./scripts/proxy.sh restart`
+
 ### Useful Commands
 
 ```bash

@@ -17,8 +17,11 @@ import {
   parseGatewayConfig,
   parseRoute,
   readGatewayConfig,
+  readGatewayConfigFromFile,
+  readGatewayConfigText,
   stripOptionalQuotes,
   validateHttpUrl,
+  writeGatewayConfig,
 } from '../config.js';
 
 describe('config helpers', () => {
@@ -238,6 +241,21 @@ describe('config helpers', () => {
     expect(process.env.TEST_QUOTED).toBe('quoted');
     expect(process.env.TEST_SINGLE).toBe('single');
     expect(process.env.EXISTING).toBe('keep');
+  });
+
+  it('reads and writes gateway config files', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'proxy-config-'));
+    const configPath = path.join(tempDir, 'gateway.config.json');
+    const config = {
+      listenPort: 18080,
+      healthCheckIntervalMs: 1000,
+      routes: [{ domain: 'oms.localtest.me', target: 'http://127.0.0.1:3002' }],
+    };
+
+    writeGatewayConfig(configPath, config);
+
+    expect(readGatewayConfigText(configPath)).toContain('"listenPort": 18080');
+    expect(readGatewayConfigFromFile(configPath)).toEqual(config);
   });
 
   it('ensureConfigFile handles existing file and local example template', () => {

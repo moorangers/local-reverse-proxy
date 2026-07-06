@@ -101,6 +101,12 @@ export const readGatewayConfig = (): GatewayConfig => {
   const configPath = DEFAULT_CONFIG_PATH;
   ensureConfigFile(configPath);
 
+  return readGatewayConfigFromFile(configPath);
+};
+
+export const readGatewayConfigFromFile = (
+  configPath: string,
+): GatewayConfig => {
   let parsed: unknown;
   try {
     const raw = fs.readFileSync(configPath, 'utf-8');
@@ -110,6 +116,18 @@ export const readGatewayConfig = (): GatewayConfig => {
   }
 
   return parseGatewayConfig(parsed, configPath);
+};
+
+export const readGatewayConfigText = (configPath: string): string => {
+  ensureConfigFile(configPath);
+  return fs.readFileSync(configPath, 'utf-8');
+};
+
+export const writeGatewayConfig = (
+  configPath: string,
+  config: GatewayConfig,
+): void => {
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n', 'utf-8');
 };
 
 export const parseGatewayConfig = (

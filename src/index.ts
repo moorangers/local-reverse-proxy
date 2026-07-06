@@ -4,9 +4,20 @@ import type { Socket } from 'node:net';
 import { randomUUID } from 'node:crypto';
 import httpProxy from 'http-proxy';
 
-import { gatewayConfig } from './config.js';
+import { renderAdminHtml } from './admin.js';
+import {
+  DEFAULT_CONFIG_PATH,
+  gatewayConfig,
+  readGatewayConfigText,
+} from './config.js';
 import { checkTargetHealth } from './health.js';
-import { logError, logInfo, logSuccess, logWarn } from './logger.js';
+import {
+  getRecentLogs,
+  logError,
+  logInfo,
+  logSuccess,
+  logWarn,
+} from './logger.js';
 import type { HealthStatus, RouteConfig } from './types.js';
 
 type ReqWithMeta = IncomingMessage & {
@@ -15,6 +26,9 @@ type ReqWithMeta = IncomingMessage & {
 };
 
 const ROUTES_ENDPOINT = '/__routes';
+const ADMIN_ENDPOINT = '/__admin';
+const ADMIN_STATUS_ENDPOINT = '/__admin/status';
+const ADMIN_CONFIG_ENDPOINT = '/__admin/config';
 
 export const normalizeHost = (hostHeader?: string): string => {
   if (!hostHeader) {
@@ -147,22 +161,35 @@ const server = http.createServer(
     request.__requestId = randomUUID();
     request.__startedAt = Date.now();
 
+    if (isAdminHtmlEndpoint(request.url)) {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(renderAdminHtml(buildAdminStatusPayload()));
+      return;
+    }
+
+    if (isAdminStatusEndpoint(request.url)) {
+      writeJson(res, 200, buildAdminStatusPayload());
+      return;
+    }
+
+    if (isAdminConfigEndpoint(request.url)) {
+      void handleAdminConfigRequest(request, res);
+      return;
+    }
+
     if (isRoutesEndpoint(request.url)) {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(
-        JSON.stringify(
-          Array.from(routeMap.entries()).map(([domain, route]) => ({
-            domain,
-            target: route.target,
-            healthCheckEnabled: isHealthCheckEnabled(route),
-            healthCheckPath: route.healthCheckPath,
-            activeHttp: activeHttpConnections.get(domain),
-            activeWs: activeWsConnections.get(domain),
-            health: routeHealthMap.get(domain),
-          })),
-          null,
-          2,
-        ),
+      writeJson(
+        res,
+        200,
+        Array.from(routeMap.entries()).map(([domain, route]) => ({
+          domain,
+          target: route.target,
+          healthCheckEnabled: isHealthCheckEnabled(route),
+          healthCheckPath: route.healthCheckPath,
+          activeHttp: activeHttpConnections.get(domain),
+          activeWs: activeWsConnections.get(domain),
+          health: routeHealthMap.get(domain),
+        })),
       );
       return;
     }
@@ -361,6 +388,91 @@ export const isRoutesEndpoint = (url?: string): boolean => {
   }
   const [pathname] = url.split('?');
   return pathname === ROUTES_ENDPOINT;
+};
+
+export const isAdminHtmlEndpoint = (url?: string): boolean => {
+  if (!url) {
+    return false;
+  }
+  const [pathname] = url.split('?');
+  return pathname === ADMIN_ENDPOINT;
+};
+
+export const isAdminStatusEndpoint = (url?: string): boolean => {
+  if (!url) {
+    return false;
+  }
+  const [pathname] = url.split('?');
+  return pathname === ADMIN_STATUS_ENDPOINT;
+};
+
+export const isAdminConfigEndpoint = (url?: string): boolean => {
+  if (!url) {
+    return false;
+  }
+  const [pathname] = url.split('?');
+  return pathname === ADMIN_CONFIG_ENDPOINT;
+};
+
+export const buildAdminStatusPayload = () => {
+  const routes = Array.from(routeMap.entries()).map(([domain, route]) => ({
+    domain,
+    target: route.target,
+    websocket: route.websocket ?? false,
+    healthCheckEnabled: isHealthCheckEnabled(route),
+    healthCheckPath: route.healthCheckPath ?? '/',
+    activeHttp: activeHttpConnections.get(domain) ?? 0,
+    activeWs: activeWsConnections.get(domain) ?? 0,
+    health: routeHealthMap.get(domain),
+  }));
+  const healthyRouteCount = routes.filter(
+    (route) => route.health?.up || route.health?.reason === 'disabled',
+  ).length;
+
+  return {
+    configPath: DEFAULT_CONFIG_PATH,
+    proxyStatus: 'ONLINE' as const,
+    listenPort: gatewayConfig.listenPort,
+    healthCheckIntervalMs: gatewayConfig.healthCheckIntervalMs,
+    routeCount: gatewayConfig.routes.length,
+    healthyRouteCount,
+    updatedAt: new Date().toISOString(),
+    recentLogs: getRecentLogs(24),
+    routes,
+  };
+};
+
+export const handleAdminConfigRequest = async (
+  req: IncomingMessage,
+  res: ServerResponse,
+): Promise<void> => {
+  try {
+    if (req.method === 'GET') {
+      writeJson(res, 200, {
+        configPath: DEFAULT_CONFIG_PATH,
+        raw: readGatewayConfigText(DEFAULT_CONFIG_PATH),
+      });
+      return;
+    }
+
+    writeJson(res, 405, {
+      message: 'Method Not Allowed',
+      allowedMethods: ['GET'],
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Invalid request body';
+    writeJson(res, 400, { message });
+  }
+};
+
+export const writeJson = (
+  res: ServerResponse,
+  statusCode: number,
+  payload: unknown,
+): void => {
+  res.writeHead(statusCode, { 'Content-Type': 'application/json; charset=utf-8' });
+  res.end(JSON.stringify(payload, null, 2));
 };
 
 export const increment = (map: Map<string, number>, key: string): void => {

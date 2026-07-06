@@ -1,4 +1,6 @@
 type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'OK';
+const MAX_RECENT_LOGS = 80;
+const recentLogs: string[] = [];
 
 export const serialize = (meta?: Record<string, unknown>): string => {
   if (!meta || Object.keys(meta).length === 0) {
@@ -20,11 +22,20 @@ export const log = (
   const time = new Date().toISOString();
   const levelLabel = '[' + level + ']';
   const line = `${levelLabel} ${time} ${message} ${serialize(meta)}`;
+  recentLogs.push(line);
+  if (recentLogs.length > MAX_RECENT_LOGS) {
+    recentLogs.shift();
+  }
   if (level === 'ERROR') {
     console.error(line);
     return;
   }
   console.log(line);
+};
+
+export const getRecentLogs = (limit = 20): string[] => {
+  const normalizedLimit = Number.isInteger(limit) && limit > 0 ? limit : 20;
+  return recentLogs.slice(-normalizedLimit);
 };
 
 export const logInfo = (message: string, meta?: Record<string, unknown>): void => {

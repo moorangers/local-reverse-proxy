@@ -1,6 +1,14 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
-import { log, logError, logInfo, logSuccess, logWarn, serialize } from '../logger.js';
+import {
+  getRecentLogs,
+  log,
+  logError,
+  logInfo,
+  logSuccess,
+  logWarn,
+  serialize,
+} from '../logger.js';
 
 describe('serialize', () => {
   it('returns empty string when metadata is undefined', () => {
@@ -68,5 +76,13 @@ describe('log', () => {
 
     const errorLine = String(errorSpy.mock.calls[0]?.[0] ?? '');
     expect(errorLine).toMatch(/\[ERROR\].* err /);
+  });
+
+  it('stores recent logs for admin view', () => {
+    logInfo('recent log test', { domain: 'oms.localtest.me' });
+
+    const logs = getRecentLogs(1);
+    expect(logs).toHaveLength(1);
+    expect(logs[0]).toContain('recent log test');
   });
 });
