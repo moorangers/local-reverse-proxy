@@ -22,7 +22,7 @@ export const checkTargetHealth = async (
         (res) => {
           const statusCode = res.statusCode;
           const isUp =
-            typeof statusCode === 'number' && statusCode >= 200 && statusCode < 400;
+            typeof statusCode === 'number' && statusCode >= 200 && statusCode < 500;
 
           resolve({
             up: isUp,
