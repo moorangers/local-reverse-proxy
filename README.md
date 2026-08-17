@@ -7,7 +7,7 @@ Reverse proxy for mapping domains (for example, `*.localtest.me`) to local targe
 ## Prerequisites
 
 - Node.js 22+
-- Yarn 1.x
+- Yarn 4.17.1 (managed through Corepack)
 - Docker (if you want to run in a container)
 
 ## Project Structure
@@ -28,7 +28,8 @@ When you pull the repo for the first time:
 ## Run (Local)
 
 ```bash
-yarn install
+corepack enable
+yarn install --immutable
 yarn setup:config
 yarn typecheck
 yarn build
@@ -43,10 +44,16 @@ docker build -t local-reverse-proxy:latest .
 
 ### Run Container
 
+Run these commands from the repository root. `gateway.config.json` must be a regular file containing valid JSON; do not run the command from a directory that has a folder with that name.
+
 ```bash
-docker run --rm \
+corepack enable
+yarn setup:config
+docker build -t local-reverse-proxy:latest .
+
+docker run --rm --name local-reverse-proxy \
   -p 18080:18080 \
-  -v "$(pwd)/gateway.config.json:/app/gateway.config.json:rw" \
+  -v "$PWD/gateway.config.json:/app/gateway.config.json:ro" \
   local-reverse-proxy:latest
 ```
 

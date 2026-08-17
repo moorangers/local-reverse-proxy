@@ -7,7 +7,7 @@ Reverse proxy สำหรับ map domain (เช่น `*.localtest.me`) ไ�
 ## Prerequisites
 
 - Node.js 22+
-- Yarn 1.x
+- Yarn 4.17.1 (จัดการผ่าน Corepack)
 - Docker (ถ้าจะรันผ่าน container)
 
 ## Project Structure
@@ -28,7 +28,8 @@ Reverse proxy สำหรับ map domain (เช่น `*.localtest.me`) ไ�
 ## Run (Local)
 
 ```bash
-yarn install
+corepack enable
+yarn install --immutable
 yarn setup:config
 yarn typecheck
 yarn build
@@ -43,10 +44,16 @@ docker build -t local-reverse-proxy:latest .
 
 ### Run Container
 
+ให้รันคำสั่งต่อไปนี้จากโฟลเดอร์ root ของ repository เท่านั้น และ `gateway.config.json` ต้องเป็นไฟล์ JSON ปกติ ไม่ใช่โฟลเดอร์
+
 ```bash
-docker run --rm \
+corepack enable
+yarn setup:config
+docker build -t local-reverse-proxy:latest .
+
+docker run --rm --name local-reverse-proxy \
   -p 18080:18080 \
-  -v "$(pwd)/gateway.config.json:/app/gateway.config.json:rw" \
+  -v "$PWD/gateway.config.json:/app/gateway.config.json:ro" \
   local-reverse-proxy:latest
 ```
 
